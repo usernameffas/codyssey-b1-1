@@ -114,7 +114,7 @@ const renderState = (message, showRetry = false, isLoading = false) => {
   }
 };
 
-/* E1 저장소의 README 내용에 근거한 프로젝트 소개입니다.
+/* 각 저장소 README의 확인된 내용에 근거한 프로젝트 소개입니다.
  * 목적·기술·구현·결과 각각 한 문장씩 작성하고 E1-3의 FAIL 결과도 그대로 밝힙니다.
  * GitHub API는 계속 사용하며, 다른 저장소는 API의 description을 표시합니다.
  */
@@ -136,9 +136,15 @@ const projectStories = {
     ['기술', 'Python 표준 라이브러리와 이중 반복문으로 배열 계산을 구현하고 JSON·시간 측정·허용 오차 비교를 사용했습니다.'],
     ['구현', '3×3 입력과 공식 데이터의 Cross/X 판정, 판정 불가 처리, 크기별 연산 횟수와 평균 시간을 출력합니다.'],
     ['결과', '공식 데이터 6건 중 3건은 PASS, 3건은 허용 오차에 따른 동점 처리로 FAIL이었으며 경위를 README에 기록했습니다.']
+  ],
+  'codyssey-b1-1': [
+    ['목적', 'HTML·CSS·JavaScript를 학습하며 실습 결과를 한 페이지에 정리하고 모바일에서도 볼 수 있는 개인 포트폴리오를 만들었습니다.'],
+    ['기술', '시맨틱 HTML, CSS Flexbox·Grid와 반응형 스타일, JavaScript DOM·이벤트·GitHub API, GitHub Pages를 사용했습니다.'],
+    ['구현', '소개·기술·프로젝트·문의 영역과 모바일 메뉴, 다크 모드, 공개 GitHub 저장소 자동 목록, 문의 양식의 입력 검증을 구현했습니다.'],
+    ['결과', '공개 사이트로 배포하고 데스크톱·모바일 자동 브라우저 검사를 진행했습니다. 문의 양식은 학습용으로 실제 메시지를 전송하지 않습니다.']
   ]
 };
-const featuredProjectNames = ['codyssey-e1-1', 'codyssey-e1-2', 'codyssey-e1-3'];
+const featuredProjectNames = ['codyssey-e1-1', 'codyssey-e1-2', 'codyssey-e1-3', 'codyssey-b1-1'];
 
 // 배열 복사 후 정렬하므로 GitHub API 원본 배열은 변경하지 않습니다.
 const renderProjects = (repositories) => {
