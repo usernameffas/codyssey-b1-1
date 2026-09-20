@@ -1,0 +1,9 @@
+# IDE 임시 파일, 시스템 생성 파일, 인증 정보는 공유하지 않습니다.
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.env
+.env.*
+*.log
+__pycache__/
