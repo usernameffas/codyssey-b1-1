@@ -1,52 +1,58 @@
 # 코디세이 B1-1 | 나를 소개하는 웹페이지 처음부터 만들기
 
-순수 HTML, CSS, JavaScript로 만든 반응형 개인 포트폴리오 웹사이트입니다. 외부 UI 프레임워크를 사용하지 않았으며 보너스 기능은 제외했습니다. 기존 코디세이 E1 과제 경험을 바탕으로 익명의 소개를 구성했습니다.
+순수 HTML·CSS·JavaScript로 만든 반응형 개인 포트폴리오입니다. React, Vue, jQuery 등 외부 UI 라이브러리는 사용하지 않았으며 선택 보너스 기능은 제외했습니다. 소개 글과 기본 프로필 일러스트는 학습용 예시입니다.
 
-## 프로젝트 구성
+## 제출 링크
 
-```text
-index.html          웹페이지 구조 및 시맨틱 섹션
-css/style.css       디자인 변수, 모바일 우선 반응형, 다크 모드
-js/main.js         테마·메뉴·스크롤·GitHub API·폼 입력 검증
-images/profile.svg  기본 프로필 일러스트
-README.md           프로젝트 설명, 실행 및 검사
-```
+- **GitHub 저장소:** https://github.com/usernameffas/codyssey-b1-1
+- **배포 사이트:** https://usernameffas.github.io/codyssey-b1-1/
+- **배포 기록:** https://github.com/usernameffas/codyssey-b1-1/actions/runs/35491915502
+
+2026-09-20 GitHub Pages의 빌드·배포 작업이 성공으로 완료되었고, 사이트가 휴대전화에서 열린다는 점을 확인했습니다. 실제 휴대전화에서 모든 상호작용과 GitHub API 응답을 검사했다는 뜻은 아닙니다. 완료 항목과 남은 확인 사항은 [CHECKLIST.md](CHECKLIST.md)에 구분했습니다.
+
+## 기술과 파일 구성
+
+| 파일 | 역할 |
+| --- | --- |
+| `index.html` | Header, Hero, About, Skills, Projects, Contact, Footer와 폼 구조 |
+| `css/style.css` | CSS 변수, Flexbox·Grid, 768px·1024px 반응형, 다크 모드 |
+| `js/main.js` | 이벤트, 메뉴·스크롤·테마, GitHub API, 입력 검증 |
+| `images/profile.svg` | 개인 사진을 대체하는 기본 일러스트 |
+| `STUDY_GUIDE.md` | 기능별 코드 흐름과 학습 내용 |
+| `QA_REPORT.md` | 자동 테스트 결과 및 시험 범위 |
+| `MOBILE_GUIDE.md` | 안드로이드에서 실행·검사·스크린샷·제출하는 방법 |
+
+## 구현한 필수 기능
+
+- 의미 있는 HTML 태그, 여섯 개 영역, 내부 이동 링크, 이미지 대체 텍스트, 폼 레이블
+- 모바일 우선 레이아웃과 768px/1024px 반응형; Flexbox와 Grid
+- 모바일 햄버거 메뉴와 메뉴 선택 시 닫힘, 부드러운 앵커 이동, 스크롤에 따른 헤더 및 맨 위 버튼
+- 다크 모드 전환 및 `localStorage`에 저장한 설정 다시 불러오기
+- `IntersectionObserver` 스크롤 등장 애니메이션
+- GitHub 공개 저장소 API에 `fetch`와 `async/await` 사용; 로딩·성공·빈 목록·실패·요청 제한 상태 표시
+- 문의 양식의 필수값 및 이메일 형식 검사, 필드별 오류 메시지
+
+**문의 양식은 학습용입니다.** 유효성 검사를 통과해도 이메일이나 메시지가 실제로 전송되지는 않습니다. 실제 전송은 선택 보너스여서 구현하지 않았습니다. GitHub 접근 토큰·비밀번호도 사용하지 않습니다.
 
 ## 실행 방법
 
-웹브라우저에서 `index.html`을 열어 레이아웃을 확인할 수 있습니다. API와 브라우저 저장 기능을 함께 확인하려면 로컬 웹서버 또는 이 저장소의 GitHub Pages 주소를 사용합니다. Windows에서는 VS Code Live Server를 이용할 수 있습니다. Android에서는 배포된 Pages 주소를 Chrome 또는 삼성 인터넷으로 엽니다. GitHub 계정과 접근 토큰은 코드에 입력할 필요가 없습니다.
+- **안드로이드:** 배포 사이트 URL을 Chrome이나 삼성 인터넷에서 엽니다. 자세한 확인 순서는 [MOBILE_GUIDE.md](MOBILE_GUIDE.md)에 있습니다.
+- **컴퓨터:** 저장소를 내려받은 뒤 `index.html`을 VS Code Live Server로 실행하거나 배포 사이트에 접속합니다. Python·Node·Docker 설치는 웹사이트 실행에 필수가 아닙니다.
 
-## 기능 구현 요약
+## 검증 결과와 남은 과제
 
-- Hero, About, Skills, Projects, Contact, Footer의 여섯 영역과 시맨틱 HTML 및 내부 링크
-- CSS Flexbox/Grid, 모바일 우선 구조, 768px 태블릿과 1024px 데스크톱 미디어 쿼리
-- 햄버거 메뉴, 클릭 후 닫힘, Escape 닫기, 화면 크기 변경 시 상태 초기화
-- 다크 모드 버튼, `data-theme` 변수, `localStorage`를 사용한 테마 저장
-- 스크롤 위치별 헤더 상태, 맨 위로 버튼, 부드러운 이동과 등장 애니메이션
-- `fetch` 및 `async/await`로 GitHub 공개 저장소 API 호출, 성공/로딩/빈 목록/오류 처리
-- 문의 양식의 이름·이메일·메시지 입력 검증 및 오류 메시지, 실제 이메일 전송은 선택 보너스이므로 제외
-- 접근성: 적절한 `label`, 대체 텍스트, 키보드 포커스, `aria-*` 상태, 움직임 축소 설정
+- 필수 소스 정적 검사: 통과.
+- `node --check js/main.js`: 통과.
+- Chromium에서 코드의 HTML·CSS·JavaScript를 메모리에 로드해 시험용 GitHub API 응답으로 검사: **19/19 통과**. 세 화면 크기의 가로 넘침, 메뉴, 테마, 스크롤, 폼, API 상태 등을 확인했습니다. API 결과는 모의 데이터이므로 실제 게시 사이트의 API 동작을 보증하지 않습니다.
+- GitHub Pages 배포 작업: **성공**. 사용자 확인으로 모바일에서 사이트가 열렸습니다.
+- **추가 확인 필요:** 게시 주소의 실제 GitHub 카드, 테마 새로고침 유지, 폼 및 메뉴 동작 확인; 제출용 데스크톱·모바일·다크 모드 화면 캡처 3장; 코디세이 제출 완료.
 
-## GitHub 프로젝트 표시
+## 제출 스크린샷
 
-`js/main.js`의 `GITHUB_USERNAME` 변수를 기반으로 `https://api.github.com/users/{username}/repos`에 요청합니다. 현재 `usernameffas`로 설정되어 있습니다. 공개 저장소 목록이 없는 경우, 응답이 실패한 경우, API 호출이 제한된 경우를 구분해 사용자에게 안내합니다. API 응답 문자열을 HTML로 삽입할 때 특수 문자를 이스케이프합니다.
+최종 제출용 이미지는 실제 배포 사이트를 연 상태에서 촬영한 후 아래 경로에 저장합니다. 이 문서 작성 시점에는 아직 첨부되지 않았습니다.
 
-## 문의 양식 안내
+- `docs/screenshots/desktop.png` — 데스크톱 레이아웃
+- `docs/screenshots/mobile.png` — 모바일 레이아웃
+- `docs/screenshots/dark.png` — 다크 모드
 
-이 과제의 필수 기능은 이름/이메일/메시지의 입력 검증입니다. 유효한 데이터를 입력하면 검증 완료 메시지를 표시하며 실제 메시지는 전송되지 않습니다. 연락처를 서버에 저장하지 않습니다.
-
-## 검증 상태
-
-개발 작업본에서 구조/문법 정적 검사 및 모의 GitHub API 기반 브라우저 검사를 진행했습니다. 실제 배포 사이트의 API 응답·모바일 화면·저장 기능은 **Pages 게시 이후 실제 접속하여 확인해야 합니다.** 모의 테스트 화면은 제출용 배포 화면으로 사용하지 않습니다.
-
-## GitHub Pages 게시
-
-이 저장소의 **Settings → Pages → Build and deployment → Deploy from a branch → main / (root) → Save**로 설정합니다. 이후 Pages 화면의 `Visit site`를 눌러 실제 게시 상태를 확인합니다. 저장소 주소: https://github.com/usernameffas/codyssey-b1-1 . 사이트 예상 주소: https://usernameffas.github.io/codyssey-b1-1/ (실제로 열리기 전에는 게시 완료로 표기하지 않음).
-
-## 제출 전 확인
-
-- 모바일·데스크톱 실제 화면, 다크 모드 전환, 메뉴, 스크롤, GitHub 카드 및 문의 오류를 게시 주소에서 확인합니다.
-- 실제 게시 화면을 캡처하여 제출 자료에 사용합니다. 개인정보·토큰·비밀번호가 캡처에 포함되지 않도록 확인합니다.
-- GitHub 저장소 URL과 실제 접속 가능한 Pages URL을 과제 제출 화면에 입력합니다.
-
-> 본 소개 문구와 프로필 이미지는 익명 기본값입니다. 실제 포트폴리오로 사용하려면 개인적으로 공개할 정보만 선택해 변경하세요.
+개발 과정에서 만든 모의 API 스크린샷은 배포 사이트 캡처와 구분하며 최종 배포 증빙으로 사용하지 않습니다. 실명·연락처 대신 익명 소개를 사용했으므로 공개 정보는 [사이트](https://usernameffas.github.io/codyssey-b1-1/)에서 확인 후 필요에 따라 수정합니다.
