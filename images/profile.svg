@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="기본 프로필 자리표시 이미지">
+  <rect width="180" height="180" fill="#dce9fc"/>
+  <circle cx="90" cy="66" r="28" fill="#7197cb"/>
+  <path d="M35 165c2-39 22-58 55-58s53 19 55 58" fill="#7197cb"/>
+</svg>
