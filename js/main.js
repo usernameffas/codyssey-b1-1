@@ -2,7 +2,6 @@
 
 /* =============================================================
  * B1-1: 순수 JavaScript만 사용합니다. React, jQuery, 외부 라이브러리 없음.
- * 제출 전 GitHub 아이디가 다르면 아래 한 줄을 본인 계정으로 바꾸세요.
  * 공개 저장소 목록만 읽으므로 GitHub 토큰/비밀번호는 사용하지 않습니다.
  * ============================================================= */
 const GITHUB_USERNAME = 'usernameffas';
@@ -25,7 +24,6 @@ try {
   const savedTheme = localStorage.getItem('b11-theme');
   if (savedTheme === 'dark') theme = 'dark';
 } catch (error) {
-  // 브라우저의 저장소 접근이 차단되어도 테마 버튼 자체는 동작합니다.
   console.info('테마 저장소를 사용할 수 없어 현재 탭에서만 테마를 적용합니다.');
 }
 
@@ -46,7 +44,7 @@ themeToggle.addEventListener('click', () => {
   }
 });
 
-/* 2. 모바일 햄버거 메뉴: active 클래스로 표시 상태를 전환합니다. */
+/* 2. 모바일 메뉴: 상태를 class와 aria-expanded에 함께 반영 */
 const closeMenu = () => {
   siteNavigation.classList.remove('active');
   menuToggle.classList.remove('active');
@@ -59,14 +57,12 @@ menuToggle.addEventListener('click', () => {
   menuToggle.setAttribute('aria-expanded', String(isOpen));
   menuToggle.setAttribute('aria-label', isOpen ? '메뉴 닫기' : '메뉴 열기');
 });
-// 메뉴의 각 링크를 누르면 메뉴를 닫습니다. 실제 이동은 HTML 앵커 + CSS가 담당합니다.
 document.querySelectorAll('.nav-links a, .logo').forEach((link) => {
   link.addEventListener('click', closeMenu);
 });
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') closeMenu();
 });
-// 모바일에서 열린 채로 화면을 넓혀도 상태값이 남지 않도록 정리합니다.
 window.addEventListener('resize', () => {
   if (window.innerWidth >= 768) closeMenu();
 });
@@ -82,14 +78,14 @@ backToTop.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-/* 4. 스크롤 등장 효과: IntersectionObserver로 화면에 들어온 영역만 표시 */
+/* 4. 스크롤 등장 효과: 화면에 들어온 섹션을 한 번만 표시 */
 const revealTargets = document.querySelectorAll('.reveal-target');
 if ('IntersectionObserver' in window) {
   const revealObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         entry.target.classList.add('visible');
-        observer.unobserve(entry.target); // 나타난 뒤 관찰 종료: 불필요한 반복 방지
+        observer.unobserve(entry.target);
       }
     });
   }, { threshold: 0.2 });
@@ -99,17 +95,16 @@ if ('IntersectionObserver' in window) {
   });
 }
 
-/* 5. GitHub API: 로딩 → 성공/빈 데이터/에러 중 하나의 상태로 렌더링 */
+/* 5. GitHub API: 로딩 → 성공/빈 목록/오류로 표시 상태를 전환 */
 const profileUrl = `https://github.com/${encodeURIComponent(GITHUB_USERNAME)}`;
 document.querySelectorAll('#github-profile-link, #contact-github-link, #footer-github-link').forEach((link) => {
   link.href = profileUrl;
 });
-// API 응답 텍스트를 innerHTML에 넣을 때 특수 문자를 이스케이프해 HTML 삽입을 방지합니다.
+// API에서 받은 문자열을 HTML에 넣기 전에 이스케이프합니다.
 const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
 })[character]);
 
-// 상태 화면 역시 재사용할 수 있는 한 함수로 생성합니다.
 const renderState = (message, showRetry = false, isLoading = false) => {
   const icon = isLoading ? '<span class="spinner" aria-hidden="true"></span>' : '';
   const retry = showRetry ? '<button class="button button-secondary" id="retry-projects" type="button">다시 시도</button>' : '';
@@ -119,28 +114,63 @@ const renderState = (message, showRetry = false, isLoading = false) => {
   }
 };
 
-// map: 저장소 객체들의 배열을 HTML 카드 문자열들의 배열로 바꾸는 메서드입니다.
+/* E1 저장소의 README 내용에 근거한 프로젝트 소개입니다.
+ * 목적·기술·구현·결과 각각 한 문장씩 작성하고 E1-3의 FAIL 결과도 그대로 밝힙니다.
+ * GitHub API는 계속 사용하며, 다른 저장소는 API의 description을 표시합니다.
+ */
+const projectStories = {
+  'codyssey-e1-1': [
+    ['목적', '개발 환경을 구성하고 터미널·컨테이너·Git의 기본 사용법을 익히기 위해 진행한 실습입니다.'],
+    ['기술', 'macOS와 OrbStack, Ubuntu 24.04, Docker·NGINX, Shell 스크립트와 Git/GitHub를 사용했습니다.'],
+    ['구현', 'Dockerfile로 웹 서버 이미지를 빌드하고 포트 연결, 바인드 마운트, 볼륨의 데이터 유지 기능을 확인했습니다.'],
+    ['결과', '실행 로그와 화면 캡처를 정리하고 공용 Mac의 관리자 권한 제한에 맞춘 설정 스크립트도 만들었습니다.']
+  ],
+  'codyssey-e1-2': [
+    ['목적', 'Python 기초 문법을 문제로 복습할 수 있는 터미널 퀴즈 게임을 만들었습니다.'],
+    ['기술', 'Python의 클래스·조건문·반복문과 표준 라이브러리 json/pathlib, Git을 사용했습니다.'],
+    ['구현', '문제 풀이·추가·목록·최고 점수 메뉴를 제공하고 state.json에 데이터를 저장해 재실행 후에도 유지합니다.'],
+    ['결과', '기본 문제 5개와 잘못된 입력·손상된 JSON 복구 기능을 구현하고 검사 스크립트로 형식을 확인했습니다.']
+  ],
+  'codyssey-e1-3': [
+    ['목적', 'AI 연산의 기초인 곱셈·누적(MAC)을 이해하기 위한 미니 NPU 시뮬레이터를 제작했습니다.'],
+    ['기술', 'Python 표준 라이브러리와 이중 반복문으로 배열 계산을 구현하고 JSON·시간 측정·허용 오차 비교를 사용했습니다.'],
+    ['구현', '3×3 입력과 공식 데이터의 Cross/X 판정, 판정 불가 처리, 크기별 연산 횟수와 평균 시간을 출력합니다.'],
+    ['결과', '공식 데이터 6건 중 3건은 PASS, 3건은 허용 오차에 따른 동점 처리로 FAIL이었으며 경위를 README에 기록했습니다.']
+  ]
+};
+const featuredProjectNames = ['codyssey-e1-1', 'codyssey-e1-2', 'codyssey-e1-3'];
+
+// 배열 복사 후 정렬하므로 GitHub API 원본 배열은 변경하지 않습니다.
 const renderProjects = (repositories) => {
   if (repositories.length === 0) {
     renderState('표시할 프로젝트가 없습니다. 공개 저장소를 만들면 여기에 나타납니다.');
     return;
   }
-  projectList.innerHTML = repositories.map(({ name, description, language, stargazers_count: stars }) => {
+  const ordered = [...repositories].sort((first, second) => {
+    const firstRank = featuredProjectNames.indexOf(first.name);
+    const secondRank = featuredProjectNames.indexOf(second.name);
+    return (firstRank < 0 ? 99 : firstRank) - (secondRank < 0 ? 99 : secondRank);
+  });
+  projectList.innerHTML = ordered.map(({ name, description, language, stargazers_count: stars }) => {
     const url = `${profileUrl}/${encodeURIComponent(name)}`;
+    const story = projectStories[name];
+    const summary = story
+      ? `<p>${story.map(([label, sentence]) => `<strong>${escapeHtml(label)}</strong> ${escapeHtml(sentence)}`).join('<br><br>')}</p>`
+      : `<p>${escapeHtml(description || '저장소에 등록된 설명이 없습니다.')}</p>`;
     return `
       <article class="project-card">
         <div class="project-card-top"><span>PUBLIC REPOSITORY</span><span aria-hidden="true">↗</span></div>
         <h3><a href="${url}" target="_blank" rel="noopener noreferrer">${escapeHtml(name)} ↗</a></h3>
-        <p>${escapeHtml(description || '저장소에 등록된 설명이 없습니다.')}</p>
+        ${summary}
         <div class="project-meta"><span>● ${escapeHtml(language || '언어 정보 없음')}</span><span>★ ${Number.isFinite(stars) ? stars : 0}</span></div>
       </article>`;
   }).join('');
 };
 
-let isLoading = false; // 현재 요청이 진행 중인지 기억하는 상태 변수
+let isLoading = false;
 let lastRequestAt = 0;
 async function loadProjects() {
-  if (isLoading) return; // 연속 클릭으로 중복 요청하는 상황을 방지합니다.
+  if (isLoading) return;
   const elapsed = Date.now() - lastRequestAt;
   if (elapsed < API_RETRY_INTERVAL_MS) {
     const wait = Math.ceil((API_RETRY_INTERVAL_MS - elapsed) / 1000);
@@ -151,7 +181,6 @@ async function loadProjects() {
   lastRequestAt = Date.now();
   renderState('프로젝트를 불러오는 중...', false, true);
   try {
-    // fetch/await: 응답을 기다리는 동안 브라우저의 나머지 동작은 계속됩니다.
     const url = `https://api.github.com/users/${encodeURIComponent(GITHUB_USERNAME)}/repos?sort=updated&per_page=100&type=owner`;
     const response = await fetch(url, { headers: { Accept: 'application/vnd.github+json' } });
     if (response.status === 403 || response.status === 429) {
@@ -166,15 +195,14 @@ async function loadProjects() {
     }
     renderProjects(repositories);
   } catch (error) {
-    // 오류를 화면에 표시하므로 사용자는 개발자 도구를 열지 않아도 알 수 있습니다.
     renderState(`프로젝트를 불러올 수 없습니다. ${error.message}`, true);
   } finally {
     isLoading = false;
   }
 }
-loadProjects(); // 페이지가 시작될 때 한 번만 자동 호출합니다.
+loadProjects();
 
-/* 6. 문의 폼: input → 검증 상태 → 필드 주변 오류 표시 / 성공 메시지 */
+/* 6. 문의 폼: 입력값 검증만 하며 실제 메시지는 전송하지 않습니다. */
 const nameField = document.querySelector('#contact-name');
 const emailField = document.querySelector('#contact-email');
 const messageField = document.querySelector('#contact-message');
@@ -197,8 +225,6 @@ const validateField = (field) => {
   field.setAttribute('aria-invalid', String(Boolean(message)));
   return !message;
 };
-
-// 입력 중에는 해당 항목의 오류를 즉시 갱신합니다.
 formFields.forEach((field) => {
   field.addEventListener('input', () => {
     validateField(field);
@@ -207,7 +233,7 @@ formFields.forEach((field) => {
   });
 });
 contactForm.addEventListener('submit', (event) => {
-  event.preventDefault(); // 페이지 새로고침/실제 폼 전송을 막습니다.
+  event.preventDefault();
   let allValid = true;
   formFields.forEach((field) => {
     if (!validateField(field)) allValid = false;
@@ -218,7 +244,6 @@ contactForm.addEventListener('submit', (event) => {
     formFields.find((field) => field.getAttribute('aria-invalid') === 'true').focus();
     return;
   }
-  // 선택 보너스인 실제 이메일 전송은 구현하지 않았으므로 성공 메시지를 정확히 표현합니다.
   formStatus.textContent = '입력 검증이 완료되었습니다. 이 양식은 학습용이므로 실제 메시지는 전송되지 않습니다.';
   formStatus.className = 'form-status success';
 });
