@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="HTML, CSS, JavaScript로 만든 개인 포트폴리오: 소개, 기술, GitHub 프로젝트 및 문의 양식.">
+  <title>MY PORTFOLIO | 웹 개발 포트폴리오</title>
+  <!-- 외부 스타일시트: 화면 디자인, 반응형 배치, 다크 모드를 담당합니다. -->
+  <link rel="stylesheet" href="css/style.css">
+  <!-- defer: HTML을 다 읽은 뒤 메인 JavaScript를 실행합니다. -->
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <!-- 건너뛰기 링크: 키보드 사용자에게 본문으로 바로 이동하는 길을 제공합니다. -->
+  <a class="skip-link" href="#hero">본문으로 바로 가기</a>
+  <header class="site-header" id="page-header">
+    <div class="container header-inner">
+      <a class="logo" href="#hero" aria-label="포트폴리오 홈으로 이동">MY<span>PORTFOLIO.</span></a>
+      <nav class="site-nav" id="site-navigation" aria-label="주요 메뉴">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="#hero">홈</a></li>
+          <li><a href="#about">소개</a></li>
+          <li><a href="#skills">기술</a></li>
+          <li><a href="#projects">프로젝트</a></li>
+          <li><a href="#contact">문의</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <!-- 버튼 클릭 → 상태 변경 → data-theme 변경 → CSS 색상 변경 -->
+        <button id="theme-toggle" class="icon-button theme-toggle" type="button" aria-label="다크 모드 켜기" aria-pressed="false">
+          <span id="theme-icon" aria-hidden="true">☾</span>
+          <span class="theme-label">테마</span>
+        </button>
+        <!-- aria-expanded는 모바일 메뉴의 열림/닫힘 상태를 알려 줍니다. -->
+        <button id="menu-toggle" class="icon-button menu-toggle" type="button" aria-controls="site-navigation" aria-expanded="false" aria-label="메뉴 열기">
+          <span class="hamburger-lines" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero: 방문자에게 보여 줄 첫인사와 이동 버튼 -->
+    <section id="hero" class="section hero" aria-labelledby="hero-title">
+      <div class="container hero-layout">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> WEB DEVELOPMENT · PORTFOLIO</p>
+          <h1 id="hero-title">안녕하세요.<br><span class="highlight">웹을 만드는 과정을</span><br>배우고 있습니다.</h1>
+          <p class="hero-description">Python 퀴즈 게임과 Docker 실습을 진행한 뒤, HTML · CSS · JavaScript로 직접 만드는 첫 웹 포트폴리오에 도전했습니다.</p>
+          <div class="hero-actions">
+            <a class="button" href="#projects">프로젝트 살펴보기 <span aria-hidden="true">↗</span></a>
+            <a class="button button-secondary" href="#contact">문의하기</a>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="art-orbit art-orbit-one"></div><div class="art-orbit art-orbit-two"></div>
+          <div class="art-card"><span class="art-card-label">HELLO WORLD</span><span class="art-symbol">{ &lt;/&gt; }</span><span class="art-card-caption">design · code · create</span></div>
+        </div>
+      </div>
+      <div class="container hero-footnote"><span>01 / 소개</span><span>스크롤하여 더 보기 ↓</span></div>
+    </section>
+
+    <!-- About: 의미 있는 대체 텍스트가 있는 프로필 이미지를 사용합니다. -->
+    <section id="about" class="section about-section" aria-labelledby="about-title">
+      <div class="container about-layout reveal-target">
+        <div class="about-photo-wrap"><img class="profile-image" src="images/profile.svg" width="320" height="320" alt="사람의 상반신을 단순화한 기본 프로필 일러스트"></div>
+        <div>
+          <p class="section-kicker">01 · ABOUT</p>
+          <h2 id="about-title">실습한 내용을<br>작동하는 결과로 남깁니다.</h2>
+          <p class="section-description">Python으로 퀴즈 게임을 제작하고 Git으로 변경 과정을 기록했습니다. Docker로 웹 서버를 실행한 경험을 바탕으로, 이번에는 시맨틱 HTML과 반응형 CSS, JavaScript 이벤트 및 GitHub API를 연결하는 웹페이지를 만들었습니다.</p>
+          <p class="about-note">개인 사진 대신 기본 일러스트를 사용했으며, 작업 결과는 아래 GitHub 공개 저장소 목록으로 소개합니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Skills: 목록은 ul/li로 의미 있게 묶습니다. -->
+    <section id="skills" class="section section-muted" aria-labelledby="skills-title">
+      <div class="container reveal-target">
+        <p class="section-kicker">02 · SKILLS</p>
+        <h2 id="skills-title">사용한 도구와 배운 개념</h2>
+        <p class="section-description section-intro">도구의 이름뿐 아니라 각 기술이 맡은 역할을 정리했습니다.</p>
+        <ul class="skills-list">
+          <li><span class="skill-icon" aria-hidden="true">&lt;/&gt;</span><strong>HTML</strong><span>의미 있는 콘텐츠 구조</span></li>
+          <li><span class="skill-icon" aria-hidden="true">#</span><strong>CSS</strong><span>반응형 레이아웃과 테마</span></li>
+          <li><span class="skill-icon" aria-hidden="true">{ }</span><strong>JavaScript</strong><span>이벤트 · DOM · 비동기 통신</span></li>
+          <li><span class="skill-icon" aria-hidden="true">⑂</span><strong>Git &amp; GitHub</strong><span>변경 이력과 프로젝트 공유</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Projects: JavaScript가 GitHub API의 저장소 목록을 읽어 카드를 만듭니다. -->
+    <section id="projects" class="section" aria-labelledby="projects-title">
+      <div class="container reveal-target">
+        <p class="section-kicker">03 · PROJECTS</p>
+        <div class="section-heading-row">
+          <div><h2 id="projects-title">GitHub 프로젝트</h2><p class="section-description">공개 저장소 정보를 GitHub API에서 직접 불러옵니다.</p></div>
+          <a class="text-link" id="github-profile-link" href="https://github.com/usernameffas" target="_blank" rel="noopener noreferrer">GitHub 프로필 ↗</a>
+        </div>
+        <!-- 로딩/성공/에러/빈 데이터가 모두 이 영역에서 전환됩니다. -->
+        <div id="project-list" class="project-grid" role="status" aria-live="polite" aria-atomic="false">
+          <article class="state-panel loading-state"><span class="spinner" aria-hidden="true"></span><p>프로젝트를 불러오는 중...</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact: 실제 이메일 전송은 선택 보너스이므로 필수 입력 검증까지만 구현합니다. -->
+    <section id="contact" class="section section-muted" aria-labelledby="contact-title">
+      <div class="container contact-layout reveal-target">
+        <div class="contact-copy">
+          <p class="section-kicker">04 · CONTACT</p>
+          <h2 id="contact-title">함께 이야기해요.</h2>
+          <p class="section-description">이름, 이메일, 메시지를 입력하면 브라우저가 입력값을 검사합니다. 현재는 학습용 양식으로, 실제 이메일을 보내는 기능은 연결되어 있지 않습니다.</p>
+          <a class="text-link" id="contact-github-link" href="https://github.com/usernameffas" target="_blank" rel="noopener noreferrer">GitHub에서 보기 ↗</a>
+        </div>
+        <form id="contact-form" class="contact-form" novalidate>
+          <div class="form-field">
+            <label for="contact-name">이름 <span aria-hidden="true">*</span></label>
+            <input id="contact-name" name="name" type="text" autocomplete="name" required aria-describedby="name-error" placeholder="이름을 입력하세요">
+            <p class="field-error" id="name-error" aria-live="polite"></p>
+          </div>
+          <div class="form-field">
+            <label for="contact-email">이메일 <span aria-hidden="true">*</span></label>
+            <input id="contact-email" name="email" type="email" autocomplete="email" required aria-describedby="email-error" placeholder="example@email.com">
+            <p class="field-error" id="email-error" aria-live="polite"></p>
+          </div>
+          <div class="form-field">
+            <label for="contact-message">메시지 <span aria-hidden="true">*</span></label>
+            <textarea id="contact-message" name="message" rows="5" required aria-describedby="message-error" placeholder="메시지를 입력하세요"></textarea>
+            <p class="field-error" id="message-error" aria-live="polite"></p>
+          </div>
+          <button class="button submit-button" type="submit">입력 확인하기 <span aria-hidden="true">→</span></button>
+          <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer: 현재 프로젝트의 링크를 제공합니다. -->
+  <footer class="site-footer">
+    <div class="container footer-inner"><p>© 2026 MY PORTFOLIO · HTML / CSS / JavaScript</p><a id="footer-github-link" href="https://github.com/usernameffas" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div>
+  </footer>
+  <!-- 스크롤 300px을 넘으면 나타나며, 클릭하면 맨 위로 이동합니다. -->
+  <button id="back-to-top" class="back-to-top" type="button" aria-label="페이지 맨 위로 이동">↑</button>
+</body>
+</html>
