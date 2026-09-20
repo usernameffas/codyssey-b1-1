@@ -114,9 +114,8 @@ const renderState = (message, showRetry = false, isLoading = false) => {
   }
 };
 
-/* 각 저장소 README의 확인된 내용에 근거한 프로젝트 소개입니다.
- * 목적·기술·구현·결과 각각 한 문장씩 작성하고 E1-3의 FAIL 결과도 그대로 밝힙니다.
- * GitHub API는 계속 사용하며, 다른 저장소는 API의 description을 표시합니다.
+/* GitHub About의 Description을 카드 소개로 우선 표시합니다.
+ * Description이 비어 있으면 README에 근거해 정리한 소개를 표시합니다.
  */
 const projectStories = {
   'codyssey-e1-1': [
@@ -141,7 +140,7 @@ const projectStories = {
     ['목적', 'HTML·CSS·JavaScript를 학습하며 실습 결과를 한 페이지에 정리하고 모바일에서도 볼 수 있는 개인 포트폴리오를 만들었습니다.'],
     ['기술', '시맨틱 HTML, CSS Flexbox·Grid와 반응형 스타일, JavaScript DOM·이벤트·GitHub API, GitHub Pages를 사용했습니다.'],
     ['구현', '소개·기술·프로젝트·문의 영역과 모바일 메뉴, 다크 모드, 공개 GitHub 저장소 자동 목록, 문의 양식의 입력 검증을 구현했습니다.'],
-    ['결과', '공개 사이트로 배포하고 데스크톱·모바일 자동 브라우저 검사를 진행했습니다. 문의 양식은 학습용으로 실제 메시지를 전송하지 않습니다.']
+    ['결과', '공개 사이트로 배포하고 데스크톱·모바일 자동 브라우저 검사를 진행했습니다. 문의 양식은 학습용 입력 검증 기능을 제공합니다.']
   ]
 };
 const featuredProjectNames = ['codyssey-e1-1', 'codyssey-e1-2', 'codyssey-e1-3', 'codyssey-b1-1'];
@@ -160,9 +159,12 @@ const renderProjects = (repositories) => {
   projectList.innerHTML = ordered.map(({ name, description, language, stargazers_count: stars }) => {
     const url = `${profileUrl}/${encodeURIComponent(name)}`;
     const story = projectStories[name];
-    const summary = story
-      ? `<p>${story.map(([label, sentence]) => `<strong>${escapeHtml(label)}</strong> ${escapeHtml(sentence)}`).join('<br><br>')}</p>`
-      : `<p>${escapeHtml(description || '저장소에 등록된 설명이 없습니다.')}</p>`;
+    const apiDescription = typeof description === 'string' ? description.trim() : '';
+    const summary = apiDescription
+      ? `<p>${escapeHtml(apiDescription)}</p>`
+      : story
+        ? `<p>${story.map(([label, sentence]) => `<strong>${escapeHtml(label)}</strong> ${escapeHtml(sentence)}`).join('<br><br>')}</p>`
+        : '<p>저장소 소개가 준비 중입니다.</p>';
     return `
       <article class="project-card">
         <div class="project-card-top"><span>PUBLIC REPOSITORY</span><span aria-hidden="true">↗</span></div>
