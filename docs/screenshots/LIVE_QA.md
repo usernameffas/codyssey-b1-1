@@ -1,6 +1,6 @@
 # 배포 사이트 브라우저 검사
 
-검사 시각: 2026-09-20T12:53:28.516Z
+검사 시각: 2026-09-20T12:57:05.135Z
 대상: https://usernameffas.github.io/codyssey-b1-1/
 검사 환경: GitHub Actions의 자동 Chromium 브라우저
 스크린샷 출처: 공개된 GitHub Pages 주소에 직접 접속해 촬영
