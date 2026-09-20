@@ -1,4 +1,4 @@
-name: Capture real deployed screenshots
+name: Capture deployed website screenshots
 
 on:
   workflow_dispatch:
@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: b1-1-screenshot-capture
+  cancel-in-progress: false
+
 jobs:
   capture:
     runs-on: ubuntu-latest
@@ -20,11 +24,11 @@ jobs:
           node-version: '22'
       - name: Check JavaScript syntax
         run: node --check js/main.js
-      - name: Install browser for QA only (not a website dependency)
+      - name: Install Chromium for browser testing
         run: |
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Visit published URL and capture its actual rendered page
+      - name: Visit published URL and capture rendered page
         run: |
           node <<'NODE'
           const fs = require('fs');
@@ -33,7 +37,7 @@ jobs:
           (async () => {
             fs.mkdirSync('docs/screenshots', { recursive: true });
             const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
-            const report = ['# Live-site browser verification', '', 'Date: ' + new Date().toISOString(), 'Source: ' + url, 'Browser: automated Chromium on GitHub Actions; not a physical Samsung or Windows device.', 'The screenshots below come from the publicly deployed site, not mock API or local memory.', ''];
+            const report = ['# 배포 사이트 브라우저 검사', '', '검사 시각: ' + new Date().toISOString(), '대상: ' + url, '검사 환경: GitHub Actions의 자동 Chromium 브라우저', '스크린샷 출처: 공개된 GitHub Pages 주소에 직접 접속해 촬영', ''];
             try {
               const desktop = await browser.newContext({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 1 });
               const d = await desktop.newPage();
@@ -46,7 +50,7 @@ jobs:
               await d.waitForTimeout(750);
               await d.screenshot({ path: 'docs/screenshots/desktop.png', fullPage: true });
               const dOverflow = await d.evaluate(() => document.documentElement.scrollWidth > innerWidth);
-              report.push('- Desktop 1280px: HTTP 200; full-page screenshot desktop.png; horizontal overflow: ' + dOverflow + '.');
+              report.push('- 데스크톱 1280px: HTTP 200, desktop.png 촬영, 가로 넘침=' + dOverflow + '.');
               const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
               const m = await mobile.newPage();
               r = await m.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -54,34 +58,34 @@ jobs:
               await m.waitForTimeout(2500);
               const projectText = (await m.locator('#project-list').innerText()).replace(/\s+/g, ' ').slice(0, 250);
               const projectLinks = await m.locator('#project-list a[href*="github.com/"]').count();
-              report.push('- Projects area on live site: GitHub repository links found = ' + projectLinks + '; visible text excerpt: ' + JSON.stringify(projectText) + '.');
-              // 세 개의 실제 E1 프로젝트에 목적·기술·구현·결과가 표시되는지 확인합니다.
-              for (const project of ['codyssey-e1-1', 'codyssey-e1-2', 'codyssey-e1-3']) {
+              report.push('- 프로젝트 영역: 공개 GitHub 저장소 링크 ' + projectLinks + '개, 표시 문구 일부: ' + JSON.stringify(projectText) + '.');
+              // GitHub 소개를 우선 사용하고, 소개가 비었을 때는 네 항목의 학습용 요약을 표시합니다.
+              for (const project of ['codyssey-e1-1', 'codyssey-e1-2', 'codyssey-e1-3', 'codyssey-b1-1']) {
                 const card = m.locator('.project-card').filter({ hasText: project });
                 const text = await card.innerText();
-                if (!['목적', '기술', '구현', '결과'].every(label => text.includes(label))) {
-                  throw Error(project + ': four-part project story missing');
+                const summary = await card.locator('p').innerText();
+                if (!summary.trim()) throw Error(project + ': project introduction missing');
+                const hasFourParts = ['목적', '기술', '구현', '결과'].every(label => text.includes(label));
+                if (project === 'codyssey-e1-3' && hasFourParts && !text.includes('3건은 PASS')) {
+                  throw Error('E1-3 fallback result disclosure missing');
                 }
-                if (project === 'codyssey-e1-3' && !text.includes('3건은 PASS')) {
-                  throw Error('E1-3 result disclosure missing');
-                }
-                report.push('- Verified project summary: ' + project + ' has purpose, technology, implementation and outcome.');
+                report.push('- ' + project + ': 프로젝트 소개 표시 확인 (형식: ' + (hasFourParts ? '학습용 상세 소개' : 'GitHub Description') + ').');
               }
               const menu = m.locator('#menu-toggle');
               await menu.click();
               const opened = await menu.getAttribute('aria-expanded');
               await m.locator('.nav-links a[href="#skills"]').click();
               const closed = await menu.getAttribute('aria-expanded');
-              report.push('- Mobile menu: opened aria-expanded=' + opened + '; closed after navigation=' + closed + '.');
+              report.push('- 모바일 메뉴: 열림=' + opened + ', 메뉴 이동 뒤 닫힘=' + closed + '.');
               await m.locator('#contact-email').fill('incorrect');
               const emailError = await m.locator('#email-error').innerText();
-              report.push('- Invalid email displays field error: ' + Boolean(emailError) + '.');
+              report.push('- 이메일 형식 오류 안내 표시=' + Boolean(emailError) + '.');
               await m.locator('#contact-name').fill('검증 테스트');
               await m.locator('#contact-email').fill('test@example.com');
               await m.locator('#contact-message').fill('브라우저 입력 검사 확인');
               await m.locator('#contact-form button[type="submit"]').click();
               const validMsg = await m.locator('#form-status').innerText();
-              report.push('- Valid contact input confirms validation but no real email is sent: ' + /검증.*완료/.test(validMsg) + '.');
+              report.push('- 정상 입력 검증 완료 표시=' + /검증.*완료/.test(validMsg) + '.');
               const backTop = m.locator('#back-to-top');
               await m.evaluate(() => window.scrollTo({ top: 850, behavior: 'instant' }));
               await m.waitForTimeout(350);
@@ -89,33 +93,38 @@ jobs:
               await backTop.click();
               await m.waitForTimeout(1700);
               const atTop = await m.evaluate(() => scrollY < 40);
-              report.push('- Scroll-to-top: button visible=' + backVisible + ', returned near top=' + atTop + '.');
+              report.push('- 맨 위로 이동: 버튼 표시=' + backVisible + ', 화면 상단 도착=' + atTop + '.');
               for (const id of ['about', 'skills', 'projects', 'contact']) { await m.locator('#' + id).scrollIntoViewIfNeeded(); await m.waitForTimeout(300); }
               await m.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
               await m.waitForTimeout(750);
               await m.screenshot({ path: 'docs/screenshots/mobile.png', fullPage: true });
               const mOverflow = await m.evaluate(() => document.documentElement.scrollWidth > innerWidth);
-              report.push('- Mobile 390px: full-page screenshot mobile.png; horizontal overflow: ' + mOverflow + '.');
+              report.push('- 모바일 390px: mobile.png 촬영, 가로 넘침=' + mOverflow + '.');
               await m.locator('#theme-toggle').click();
               await m.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
               await m.waitForTimeout(2500);
               const theme = await m.locator('html').getAttribute('data-theme');
               const saved = await m.evaluate(() => localStorage.getItem('b11-theme'));
-              report.push('- Dark theme after reload: html data-theme=' + theme + ', localStorage=' + saved + '.');
+              report.push('- 새로고침 후 다크 모드: data-theme=' + theme + ', localStorage=' + saved + '.');
               for (const id of ['about', 'skills', 'projects', 'contact']) { await m.locator('#' + id).scrollIntoViewIfNeeded(); await m.waitForTimeout(300); }
               await m.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
               await m.waitForTimeout(750);
               await m.screenshot({ path: 'docs/screenshots/dark.png', fullPage: true });
-              report.push('- Dark-theme 390px full-page screenshot: dark.png.');
+              report.push('- 다크 모드 모바일 390px: dark.png 촬영.');
               fs.writeFileSync('docs/screenshots/LIVE_QA.md', report.join('\n') + '\n');
-              if (dOverflow || mOverflow || opened !== 'true' || closed !== 'false' || !emailError || !backVisible || !atTop || theme !== 'dark' || saved !== 'dark') throw Error('Some live site behavior failed; see docs/screenshots/LIVE_QA.md in step output');
+              if (dOverflow || mOverflow || opened !== 'true' || closed !== 'false' || !emailError || !backVisible || !atTop || theme !== 'dark' || saved !== 'dark') throw Error('Live-site behavior check failed; see docs/screenshots/LIVE_QA.md');
               console.log(report.join('\n'));
             } finally { await browser.close(); }
           })().catch(e => { console.error(e); process.exitCode = 1; });
           NODE
-      - name: Commit only real deployed screenshots and report
+      - name: Save published screenshots and report
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add docs/screenshots/desktop.png docs/screenshots/mobile.png docs/screenshots/dark.png docs/screenshots/LIVE_QA.md
-          git diff --cached --quiet || (git commit -m 'docs: refresh genuine deployed screenshots after E1 descriptions' && git push)
+          if ! git diff --cached --quiet; then
+            git commit -m 'docs: update deployed website screenshots and QA report'
+            git fetch origin main
+            git rebase origin/main
+            git push origin HEAD:main
+          fi
