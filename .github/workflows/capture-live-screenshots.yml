@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - '.github/workflows/capture-live-screenshots.yml'
+      - 'js/main.js'
 
 permissions:
   contents: write
@@ -17,6 +18,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Check JavaScript syntax
+        run: node --check js/main.js
       - name: Install browser for QA only (not a website dependency)
         run: |
           npm install --no-save playwright@1.55.0
@@ -31,10 +34,9 @@ jobs:
             fs.mkdirSync('docs/screenshots', { recursive: true });
             const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
             const report = ['# Live-site browser verification', '', 'Date: ' + new Date().toISOString(), 'Source: ' + url, 'Browser: automated Chromium on GitHub Actions; not a physical Samsung or Windows device.', 'The screenshots below come from the publicly deployed site, not mock API or local memory.', ''];
-            const pages = [];
             try {
               const desktop = await browser.newContext({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 1 });
-              const d = await desktop.newPage(); pages.push(d);
+              const d = await desktop.newPage();
               let r = await d.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
               if (!r || r.status() !== 200) throw Error('Desktop live HTTP status: ' + (r ? r.status() : 'no response'));
               await d.locator('#hero').waitFor({ timeout: 10000 });
@@ -46,13 +48,25 @@ jobs:
               const dOverflow = await d.evaluate(() => document.documentElement.scrollWidth > innerWidth);
               report.push('- Desktop 1280px: HTTP 200; full-page screenshot desktop.png; horizontal overflow: ' + dOverflow + '.');
               const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
-              const m = await mobile.newPage(); pages.push(m);
+              const m = await mobile.newPage();
               r = await m.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
               if (!r || r.status() !== 200) throw Error('Mobile live HTTP status: ' + (r ? r.status() : 'no response'));
               await m.waitForTimeout(2500);
               const projectText = (await m.locator('#project-list').innerText()).replace(/\s+/g, ' ').slice(0, 250);
               const projectLinks = await m.locator('#project-list a[href*="github.com/"]').count();
               report.push('- Projects area on live site: GitHub repository links found = ' + projectLinks + '; visible text excerpt: ' + JSON.stringify(projectText) + '.');
+              // 세 개의 실제 E1 프로젝트에 목적·기술·구현·결과가 표시되는지 확인합니다.
+              for (const project of ['codyssey-e1-1', 'codyssey-e1-2', 'codyssey-e1-3']) {
+                const card = m.locator('.project-card').filter({ hasText: project });
+                const text = await card.innerText();
+                if (!['목적', '기술', '구현', '결과'].every(label => text.includes(label))) {
+                  throw Error(project + ': four-part project story missing');
+                }
+                if (project === 'codyssey-e1-3' && !text.includes('3건은 PASS')) {
+                  throw Error('E1-3 result disclosure missing');
+                }
+                report.push('- Verified project summary: ' + project + ' has purpose, technology, implementation and outcome.');
+              }
               const menu = m.locator('#menu-toggle');
               await menu.click();
               const opened = await menu.getAttribute('aria-expanded');
@@ -104,4 +118,4 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add docs/screenshots/desktop.png docs/screenshots/mobile.png docs/screenshots/dark.png docs/screenshots/LIVE_QA.md
-          git diff --cached --quiet || (git commit -m 'docs: add genuine deployed desktop mobile dark screenshots' && git push)
+          git diff --cached --quiet || (git commit -m 'docs: refresh genuine deployed screenshots after E1 descriptions' && git push)
