@@ -1,0 +1,107 @@
+name: Capture real deployed screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/capture-live-screenshots.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser for QA only (not a website dependency)
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Visit published URL and capture its actual rendered page
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const { chromium } = require('playwright');
+          const url = 'https://usernameffas.github.io/codyssey-b1-1/';
+          (async () => {
+            fs.mkdirSync('docs/screenshots', { recursive: true });
+            const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
+            const report = ['# Live-site browser verification', '', 'Date: ' + new Date().toISOString(), 'Source: ' + url, 'Browser: automated Chromium on GitHub Actions; not a physical Samsung or Windows device.', 'The screenshots below come from the publicly deployed site, not mock API or local memory.', ''];
+            const pages = [];
+            try {
+              const desktop = await browser.newContext({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 1 });
+              const d = await desktop.newPage(); pages.push(d);
+              let r = await d.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+              if (!r || r.status() !== 200) throw Error('Desktop live HTTP status: ' + (r ? r.status() : 'no response'));
+              await d.locator('#hero').waitFor({ timeout: 10000 });
+              await d.waitForTimeout(2500);
+              for (const id of ['about', 'skills', 'projects', 'contact']) { await d.locator('#' + id).scrollIntoViewIfNeeded(); await d.waitForTimeout(300); }
+              await d.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+              await d.waitForTimeout(750);
+              await d.screenshot({ path: 'docs/screenshots/desktop.png', fullPage: true });
+              const dOverflow = await d.evaluate(() => document.documentElement.scrollWidth > innerWidth);
+              report.push('- Desktop 1280px: HTTP 200; full-page screenshot desktop.png; horizontal overflow: ' + dOverflow + '.');
+              const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+              const m = await mobile.newPage(); pages.push(m);
+              r = await m.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+              if (!r || r.status() !== 200) throw Error('Mobile live HTTP status: ' + (r ? r.status() : 'no response'));
+              await m.waitForTimeout(2500);
+              const projectText = (await m.locator('#project-list').innerText()).replace(/\s+/g, ' ').slice(0, 250);
+              const projectLinks = await m.locator('#project-list a[href*="github.com/"]').count();
+              report.push('- Projects area on live site: GitHub repository links found = ' + projectLinks + '; visible text excerpt: ' + JSON.stringify(projectText) + '.');
+              const menu = m.locator('#menu-toggle');
+              await menu.click();
+              const opened = await menu.getAttribute('aria-expanded');
+              await m.locator('.nav-links a[href="#skills"]').click();
+              const closed = await menu.getAttribute('aria-expanded');
+              report.push('- Mobile menu: opened aria-expanded=' + opened + '; closed after navigation=' + closed + '.');
+              await m.locator('#contact-email').fill('incorrect');
+              const emailError = await m.locator('#email-error').innerText();
+              report.push('- Invalid email displays field error: ' + Boolean(emailError) + '.');
+              await m.locator('#contact-name').fill('검증 테스트');
+              await m.locator('#contact-email').fill('test@example.com');
+              await m.locator('#contact-message').fill('브라우저 입력 검사 확인');
+              await m.locator('#contact-form button[type="submit"]').click();
+              const validMsg = await m.locator('#form-status').innerText();
+              report.push('- Valid contact input confirms validation but no real email is sent: ' + /검증.*완료/.test(validMsg) + '.');
+              const backTop = m.locator('#back-to-top');
+              await m.evaluate(() => window.scrollTo({ top: 850, behavior: 'instant' }));
+              await m.waitForTimeout(350);
+              const backVisible = await backTop.evaluate(el => el.classList.contains('visible'));
+              await backTop.click();
+              await m.waitForTimeout(1700);
+              const atTop = await m.evaluate(() => scrollY < 40);
+              report.push('- Scroll-to-top: button visible=' + backVisible + ', returned near top=' + atTop + '.');
+              for (const id of ['about', 'skills', 'projects', 'contact']) { await m.locator('#' + id).scrollIntoViewIfNeeded(); await m.waitForTimeout(300); }
+              await m.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+              await m.waitForTimeout(750);
+              await m.screenshot({ path: 'docs/screenshots/mobile.png', fullPage: true });
+              const mOverflow = await m.evaluate(() => document.documentElement.scrollWidth > innerWidth);
+              report.push('- Mobile 390px: full-page screenshot mobile.png; horizontal overflow: ' + mOverflow + '.');
+              await m.locator('#theme-toggle').click();
+              await m.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+              await m.waitForTimeout(2500);
+              const theme = await m.locator('html').getAttribute('data-theme');
+              const saved = await m.evaluate(() => localStorage.getItem('b11-theme'));
+              report.push('- Dark theme after reload: html data-theme=' + theme + ', localStorage=' + saved + '.');
+              for (const id of ['about', 'skills', 'projects', 'contact']) { await m.locator('#' + id).scrollIntoViewIfNeeded(); await m.waitForTimeout(300); }
+              await m.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+              await m.waitForTimeout(750);
+              await m.screenshot({ path: 'docs/screenshots/dark.png', fullPage: true });
+              report.push('- Dark-theme 390px full-page screenshot: dark.png.');
+              fs.writeFileSync('docs/screenshots/LIVE_QA.md', report.join('\n') + '\n');
+              if (dOverflow || mOverflow || opened !== 'true' || closed !== 'false' || !emailError || !backVisible || !atTop || theme !== 'dark' || saved !== 'dark') throw Error('Some live site behavior failed; see docs/screenshots/LIVE_QA.md in step output');
+              console.log(report.join('\n'));
+            } finally { await browser.close(); }
+          })().catch(e => { console.error(e); process.exitCode = 1; });
+          NODE
+      - name: Commit only real deployed screenshots and report
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/screenshots/desktop.png docs/screenshots/mobile.png docs/screenshots/dark.png docs/screenshots/LIVE_QA.md
+          git diff --cached --quiet || (git commit -m 'docs: add genuine deployed desktop mobile dark screenshots' && git push)
