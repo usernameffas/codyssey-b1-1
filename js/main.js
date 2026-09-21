@@ -7,6 +7,18 @@
 const GITHUB_USERNAME = 'usernameffas';
 const API_RETRY_INTERVAL_MS = 10000; // 인증 없는 API에 연속 요청하지 않도록 10초 간격 제한
 
+// 서로 관련된 상태를 한 객체로 관리합니다. 이벤트 → STATE 변경 → DOM 업데이트 순서입니다.
+const STATE = {
+  theme: 'light',
+  projects: [],
+  projectStatus: 'idle', // idle / loading / success / empty / error
+  projectError: null,
+  isLoading: false,
+  lastRequestAt: 0,
+  formErrors: {},
+  formStatus: 'idle' // idle / invalid / valid
+};
+
 // querySelector: HTML 요소 하나를 찾습니다. querySelectorAll: 여러 요소를 찾습니다.
 const themeToggle = document.querySelector('#theme-toggle');
 const themeIcon = document.querySelector('#theme-icon');
@@ -18,27 +30,26 @@ const projectList = document.querySelector('#project-list');
 const contactForm = document.querySelector('#contact-form');
 const formStatus = document.querySelector('#form-status');
 
-/* 1. 다크 모드: 클릭 이벤트 → theme 상태 → 화면 속성 변경 → localStorage 저장 */
-let theme = 'light';
+/* 1. 다크 모드: 클릭 이벤트 → STATE.theme 변경 → 화면 속성 변경 → localStorage 저장 */
 try {
   const savedTheme = localStorage.getItem('b11-theme');
-  if (savedTheme === 'dark') theme = 'dark';
+  if (savedTheme === 'dark') STATE.theme = 'dark';
 } catch (error) {
   console.info('테마 저장소를 사용할 수 없어 현재 탭에서만 테마를 적용합니다.');
 }
 
 const applyTheme = () => {
-  document.documentElement.dataset.theme = theme;
-  themeToggle.setAttribute('aria-pressed', String(theme === 'dark'));
-  themeToggle.setAttribute('aria-label', theme === 'dark' ? '라이트 모드 켜기' : '다크 모드 켜기');
-  themeIcon.textContent = theme === 'dark' ? '☀' : '☾';
+  document.documentElement.dataset.theme = STATE.theme;
+  themeToggle.setAttribute('aria-pressed', String(STATE.theme === 'dark'));
+  themeToggle.setAttribute('aria-label', STATE.theme === 'dark' ? '라이트 모드 켜기' : '다크 모드 켜기');
+  themeIcon.textContent = STATE.theme === 'dark' ? '☀' : '☾';
 };
 applyTheme();
 themeToggle.addEventListener('click', () => {
-  theme = theme === 'light' ? 'dark' : 'light';
+  STATE.theme = STATE.theme === 'light' ? 'dark' : 'light';
   applyTheme();
   try {
-    localStorage.setItem('b11-theme', theme);
+    localStorage.setItem('b11-theme', STATE.theme);
   } catch (error) {
     console.info('테마 변경은 적용되었지만 저장소에는 저장하지 못했습니다.');
   }
@@ -95,7 +106,7 @@ if ('IntersectionObserver' in window) {
   });
 }
 
-/* 5. GitHub API: 로딩 → 성공/빈 목록/오류로 표시 상태를 전환 */
+/* 5. GitHub API: STATE.projectStatus 변경 → 로딩/성공/빈 목록/오류 화면 전환 */
 const profileUrl = `https://github.com/${encodeURIComponent(GITHUB_USERNAME)}`;
 document.querySelectorAll('#github-profile-link, #contact-github-link, #footer-github-link').forEach((link) => {
   link.href = profileUrl;
@@ -173,19 +184,33 @@ const renderProjects = (repositories) => {
   }).join('');
 };
 
-let isLoading = false;
-let lastRequestAt = 0;
+const renderProjectStatus = () => {
+  if (STATE.projectStatus === 'loading') {
+    renderState('프로젝트를 불러오는 중...', false, true);
+  } else if (STATE.projectStatus === 'error') {
+    renderState(STATE.projectError, true);
+  } else if (STATE.projectStatus === 'empty') {
+    renderState('표시할 프로젝트가 없습니다. 공개 저장소를 만들면 여기에 나타납니다.');
+  } else if (STATE.projectStatus === 'success') {
+    renderProjects(STATE.projects);
+  }
+};
+
 async function loadProjects() {
-  if (isLoading) return;
-  const elapsed = Date.now() - lastRequestAt;
+  if (STATE.isLoading) return;
+  const elapsed = Date.now() - STATE.lastRequestAt;
   if (elapsed < API_RETRY_INTERVAL_MS) {
     const wait = Math.ceil((API_RETRY_INTERVAL_MS - elapsed) / 1000);
-    renderState(`요청 제한을 피하기 위해 ${wait}초 후 다시 시도해 주세요.`, true);
+    STATE.projectStatus = 'error';
+    STATE.projectError = `요청 제한을 피하기 위해 ${wait}초 후 다시 시도해 주세요.`;
+    renderProjectStatus();
     return;
   }
-  isLoading = true;
-  lastRequestAt = Date.now();
-  renderState('프로젝트를 불러오는 중...', false, true);
+  STATE.isLoading = true;
+  STATE.lastRequestAt = Date.now();
+  STATE.projectStatus = 'loading';
+  STATE.projectError = null;
+  renderProjectStatus();
   try {
     const url = `https://api.github.com/users/${encodeURIComponent(GITHUB_USERNAME)}/repos?sort=updated&per_page=100&type=owner`;
     const response = await fetch(url, { headers: { Accept: 'application/vnd.github+json' } });
@@ -199,16 +224,20 @@ async function loadProjects() {
     if (!Array.isArray(repositories)) {
       throw new Error('GitHub에서 받은 데이터 형식이 예상과 다릅니다.');
     }
-    renderProjects(repositories);
+    STATE.projects = repositories;
+    STATE.projectStatus = repositories.length ? 'success' : 'empty';
+    renderProjectStatus();
   } catch (error) {
-    renderState(`프로젝트를 불러올 수 없습니다. ${error.message}`, true);
+    STATE.projectStatus = 'error';
+    STATE.projectError = `프로젝트를 불러올 수 없습니다. ${error.message}`;
+    renderProjectStatus();
   } finally {
-    isLoading = false;
+    STATE.isLoading = false;
   }
 }
 loadProjects();
 
-/* 6. 문의 폼: 입력값 검증만 하며 실제 메시지는 전송하지 않습니다. */
+/* 6. 문의 폼: 입력 이벤트 → STATE.formErrors/formStatus 변경 → 오류·결과 화면 변경 */
 const nameField = document.querySelector('#contact-name');
 const emailField = document.querySelector('#contact-email');
 const messageField = document.querySelector('#contact-message');
@@ -219,6 +248,19 @@ const errors = {
   'contact-message': document.querySelector('#message-error')
 };
 
+const renderFormStatus = () => {
+  if (STATE.formStatus === 'invalid') {
+    formStatus.textContent = '입력값을 확인해 주세요. 오류가 표시된 항목을 수정하면 됩니다.';
+    formStatus.className = 'form-status error';
+  } else if (STATE.formStatus === 'valid') {
+    formStatus.textContent = '입력 검증이 완료되었습니다. 이 양식은 학습용이므로 실제 메시지는 전송되지 않습니다.';
+    formStatus.className = 'form-status success';
+  } else {
+    formStatus.textContent = '';
+    formStatus.className = 'form-status';
+  }
+};
+
 const validateField = (field) => {
   const value = field.value.trim();
   let message = '';
@@ -227,15 +269,16 @@ const validateField = (field) => {
   } else if (field === emailField && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
     message = '이메일 형식을 확인해 주세요. (예: name@example.com)';
   }
-  errors[field.id].textContent = message;
-  field.setAttribute('aria-invalid', String(Boolean(message)));
-  return !message;
+  STATE.formErrors[field.id] = message;
+  errors[field.id].textContent = STATE.formErrors[field.id];
+  field.setAttribute('aria-invalid', String(Boolean(STATE.formErrors[field.id])));
+  return !STATE.formErrors[field.id];
 };
 formFields.forEach((field) => {
   field.addEventListener('input', () => {
     validateField(field);
-    formStatus.textContent = '';
-    formStatus.className = 'form-status';
+    STATE.formStatus = 'idle';
+    renderFormStatus();
   });
 });
 contactForm.addEventListener('submit', (event) => {
@@ -244,12 +287,9 @@ contactForm.addEventListener('submit', (event) => {
   formFields.forEach((field) => {
     if (!validateField(field)) allValid = false;
   });
+  STATE.formStatus = allValid ? 'valid' : 'invalid';
+  renderFormStatus();
   if (!allValid) {
-    formStatus.textContent = '입력값을 확인해 주세요. 오류가 표시된 항목을 수정하면 됩니다.';
-    formStatus.className = 'form-status error';
-    formFields.find((field) => field.getAttribute('aria-invalid') === 'true').focus();
-    return;
+    formFields.find((field) => STATE.formErrors[field.id]).focus();
   }
-  formStatus.textContent = '입력 검증이 완료되었습니다. 이 양식은 학습용이므로 실제 메시지는 전송되지 않습니다.';
-  formStatus.className = 'form-status success';
 });
