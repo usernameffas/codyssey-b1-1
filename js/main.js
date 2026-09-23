@@ -157,13 +157,15 @@ const projectStories = {
 };
 const featuredProjectNames = ['codyssey-e1-1', 'codyssey-e1-2', 'codyssey-e1-3', 'codyssey-b1-1'];
 
-// 배열 복사 후 정렬하므로 GitHub API 원본 배열은 변경하지 않습니다.
+// filter로 화면에 쓸 수 있는 저장소만 고른 뒤, 배열을 복사해 정렬합니다.
+// filter는 조건에 맞는 항목만 남기고, sort는 표시 순서를 정합니다.
 const renderProjects = (repositories) => {
-  if (repositories.length === 0) {
+  const visibleRepositories = repositories.filter((repository) => repository && repository.name);
+  if (visibleRepositories.length === 0) {
     renderState('표시할 프로젝트가 없습니다. 공개 저장소를 만들면 여기에 나타납니다.');
     return;
   }
-  const ordered = [...repositories].sort((first, second) => {
+  const ordered = [...visibleRepositories].sort((first, second) => {
     const firstRank = featuredProjectNames.indexOf(first.name);
     const secondRank = featuredProjectNames.indexOf(second.name);
     return (firstRank < 0 ? 99 : firstRank) - (secondRank < 0 ? 99 : secondRank);
