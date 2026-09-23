@@ -33,7 +33,8 @@ GitHub Actions의 자동 Chromium 브라우저로 실제 GitHub Pages 주소에 
 | `css/style.css` | CSS 변수·Flexbox·Grid·768px/1024px 반응형·테마 |
 | `js/main.js` | DOM·이벤트·메뉴·스크롤·테마·GitHub API·입력 검증 |
 | `images/profile.svg` | 기본 일러스트 |
-| `STUDY_GUIDE.md` | 코드 학습 및 이벤트 → 상태 → 렌더링 설명 |
+| `STUDY_GUIDE.md` | 코드 학습, 이벤트 → 상태 → 렌더링 및 `map/filter/forEach/find` 설명 |
+| `PEER_REVIEW_PREP.md` | 동료평가 피드백을 반영한 코드 설명 연습 및 재평가 대비 체크리스트 |
 | `CHECKLIST.md` | 실제 완료 항목 및 코디세이 제출 상태 |
 | `QA_REPORT.md` | 개발용 검사와 실제 휴대전화 스크린샷 확인 범위 |
 | `docs/screenshots/LIVE_QA.md` | 공개 URL 자동 브라우저 검사 결과 |
