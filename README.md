@@ -66,3 +66,7 @@ GitHub Actions의 자동 Chromium 브라우저로 실제 GitHub Pages 주소에 
 - 안드로이드 기기에서 확보한 화면 3장으로 모바일 배치·다크 화면·이메일 형식 오류·위로 가기 버튼 표시를 확인. 검토 범위는 [QA_REPORT.md](QA_REPORT.md)에 기록.
 
 **과제 제출 단계:** 코디세이 제출 화면에 저장소 URL·Pages URL·요구되는 스크린샷을 제출하고 완료 표시를 확인합니다. 제출 여부는 [CHECKLIST.md](CHECKLIST.md)에서 관리합니다.
+
+## 공식 보너스 기능 작업 브랜치
+
+`feature/official-bonuses`에서 공식 보너스 4종을 추가했습니다. ① GitHub 언어별 프로젝트 필터 ② Hero 타이핑 효과 ③ Formspree 연동 코드(사용자 계정에서 발급한 endpoint 설정 후 실전송 검증 필요) ④ 시스템 다크 모드 감지. 설정·검증 순서는 [BONUS_GUIDE.md](BONUS_GUIDE.md) 참고. 기존 PASS 버전은 `main`에 유지했습니다.

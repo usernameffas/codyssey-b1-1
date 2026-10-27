@@ -179,3 +179,12 @@ h3 { font-size: 1.1rem; }
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   .js-reveal { opacity: 1; transform: none; }
 }
+/* 공식 보너스: 프로젝트 필터 · Hero 타이핑 · Formspree 연동 */
+.project-filters { display:flex; flex-wrap:wrap; gap:9px; margin:0 0 18px; }
+.project-filters[hidden] { display:none; }
+.project-filter { border:1px solid var(--border); border-radius:999px; padding:7px 14px; background:var(--card); color:var(--text); }
+.project-filter[aria-pressed="true"] { background:var(--accent); color:var(--card); border-color:var(--accent); }
+.project-card[hidden] { display:none; }
+#hero-typing.is-typing::after { content:"|"; color:var(--accent); animation:type-caret 750ms step-end infinite; }
+@keyframes type-caret { 50% {opacity:0;} }
+@media(prefers-reduced-motion:reduce) { #hero-typing.is-typing::after {display:none;} }
