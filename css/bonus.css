@@ -1,1 +1,12 @@
 .language-filters{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}.language-button{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:100px;padding:7px 14px;font:inherit;font-size:.82rem;cursor:pointer;transition:background .2s,border-color .2s}.language-button.active,.language-button:hover{background:var(--accent-soft);border-color:var(--accent)}.language-button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}.submit-button:disabled{opacity:.65;cursor:wait}
+/* 프로젝트 상태를 직접 확인하는 개발 학습용 컨트롤 */
+.state-demo-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 22px}
+.state-demo-controls>span{font-size:.84rem;color:var(--muted);font-weight:700;margin-right:6px}
+.state-demo-controls button{font:inherit;font-size:.78rem;padding:7px 12px;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:9px;cursor:pointer}
+.state-demo-controls button:hover{border-color:var(--accent);background:var(--accent-soft)}
+.state-demo-controls button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.state-demo-preview{flex-basis:100%}
+.state-demo-preview[hidden]{display:none}
+#hero-title .typing-active::after{content:"|";color:var(--accent);margin-left:2px;animation:caret-blink .65s steps(1) infinite}
+@keyframes caret-blink{50%{opacity:0}}
+@media(prefers-reduced-motion:reduce){#hero-title .typing-active::after{animation:none}}
