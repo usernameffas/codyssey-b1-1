@@ -1,27 +1,38 @@
 'use strict';
-/* Hero 타이핑 효과. 원문은 HTML에 남아 JS 실패 시 그대로 보입니다. */
+// ===== 1. Hero 두 줄 타이핑 효과 시작 =====
 (() => {
-  const target = document.querySelector('#hero-title .highlight');
+  const target = document.querySelector('#hero-typing');
   if (!target || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const message = target.textContent.trim();
-  target.setAttribute('aria-label',message);
-  target.textContent = '';
+
+  const first = '웹을 만드는 과정을';
+  const second = '배우고 있습니다.';
+  const total = first.length + second.length;
+  let index = 0;
+  target.setAttribute('aria-label', first + ' ' + second);
+  const render = () => {
+    const firstVisible = first.slice(0, Math.min(index, first.length));
+    const secondVisible = second.slice(0, Math.max(0, index - first.length));
+    // textContent로 안전하게 글자를 갱신하며, HTML 줄바꿈 요소는 유지합니다.
+    firstNode.textContent = firstVisible;
+    secondNode.textContent = secondVisible;
+  };
+  const firstNode = target.querySelector('.highlight');
+  const secondNode = target.querySelector('.hero-typing-second');
+  if (!firstNode || !secondNode) return;
+  firstNode.textContent = '';
+  secondNode.textContent = '';
   target.classList.add('typing-active');
-  let i = 0;
   const timer = setInterval(() => {
-    if (document.hidden) {
-      target.textContent = message;
-      target.classList.remove('typing-active');
+    if (document.hidden) index = total;
+    else index = Math.min(total, index + 1);
+    render();
+    if (index >= total) {
       clearInterval(timer);
-      return;
-    }
-    target.textContent = message.slice(0, ++i);
-    if (i >= message.length) {
       target.classList.remove('typing-active');
-      clearInterval(timer);
     }
   }, 120);
-})(); // ===== Hero 타이핑 효과 끝 =====
+})();
+// ===== 1. Hero 두 줄 타이핑 효과 끝 =====
 
 /* 상태 UI 테스트: GitHub API 요청을 다시 보내지 않고 DOM에 미리보기만 보여 줍니다. */
 (() => {
