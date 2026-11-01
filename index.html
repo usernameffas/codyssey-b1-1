@@ -113,10 +113,11 @@
         <div class="contact-copy">
           <p class="section-kicker">04 · CONTACT</p>
           <h2 id="contact-title">함께 이야기해요.</h2>
-          <p class="section-description">이름, 이메일, 메시지를 입력하면 브라우저가 입력값을 검사합니다. 이름·이메일·메시지를 검증합니다. 실제 전송은 Formspree 폼 ID 설정 후 활성화됩니다.</p>
+          <p class="section-description">이름, 이메일, 메시지를 입력하면 필수값과 이메일 형식을 검사한 뒤 Formspree를 통해 메시지를 전송합니다.</p>
           <a class="text-link" id="contact-github-link" href="https://github.com/usernameffas" target="_blank" rel="noopener noreferrer">GitHub에서 보기 ↗</a>
         </div>
-        <form id="contact-form" class="contact-form" novalidate>
+        <!-- ===== Contact Formspree 실제 전송 시작 ===== -->
+        <form id="contact-form" class="contact-form" data-formspree-id="xzeejnbj" novalidate>
           <div class="form-field">
             <label for="contact-name">이름 <span aria-hidden="true">*</span></label>
             <input id="contact-name" name="name" type="text" autocomplete="name" required aria-describedby="name-error" placeholder="이름을 입력하세요">
@@ -135,6 +136,7 @@
           <button class="button submit-button" type="submit">메시지 보내기 <span aria-hidden="true">→</span></button>
           <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
         </form>
+        <!-- ===== Contact Formspree 실제 전송 끝 ===== -->
       </div>
     </section>
   </main>
