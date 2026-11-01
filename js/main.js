@@ -33,7 +33,8 @@ const formStatus = document.querySelector('#form-status');
 /* 1. 다크 모드: 클릭 이벤트 → STATE.theme 변경 → 화면 속성 변경 → localStorage 저장 */
 try {
   const savedTheme = localStorage.getItem('b11-theme');
-  if (savedTheme === 'dark') STATE.theme = 'dark';
+  if (savedTheme === 'dark' || savedTheme === 'light') STATE.theme = savedTheme;
+  else if (window.matchMedia('(prefers-color-scheme: dark)').matches) STATE.theme = 'dark';
 } catch (error) {
   console.info('테마 저장소를 사용할 수 없어 현재 탭에서만 테마를 적용합니다.');
 }
@@ -255,7 +256,7 @@ const renderFormStatus = () => {
     formStatus.textContent = '입력값을 확인해 주세요. 오류가 표시된 항목을 수정하면 됩니다.';
     formStatus.className = 'form-status error';
   } else if (STATE.formStatus === 'valid') {
-    formStatus.textContent = '입력 검증이 완료되었습니다. 이 양식은 학습용이므로 실제 메시지는 전송되지 않습니다.';
+    formStatus.textContent = '입력 검증 완료. 전송 결과를 확인해 주세요.';
     formStatus.className = 'form-status success';
   } else {
     formStatus.textContent = '';
@@ -283,7 +284,7 @@ formFields.forEach((field) => {
     renderFormStatus();
   });
 });
-contactForm.addEventListener('submit', (event) => {
+contactForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   let allValid = true;
   formFields.forEach((field) => {
@@ -293,5 +294,30 @@ contactForm.addEventListener('submit', (event) => {
   renderFormStatus();
   if (!allValid) {
     formFields.find((field) => STATE.formErrors[field.id]).focus();
+    return;
+  }
+  const formId = contactForm.dataset.formspreeId;
+  if (!formId || !/^[a-z0-9]+$/i.test(formId)) {
+    formStatus.textContent = '폼 검증이 완료되었습니다. 실제 전송을 사용하려면 Formspree 폼 ID를 설정해야 합니다.';
+    return;
+  }
+  const submitButton = contactForm.querySelector('[type="submit"]');
+  submitButton.disabled = true;
+  formStatus.textContent = '메시지 전송 중...';
+  try {
+    const response = await fetch(`https://formspree.io/f/${formId}`, {
+      method: 'POST',
+      body: new FormData(contactForm),
+      headers: { Accept: 'application/json' }
+    });
+    if (!response.ok) throw new Error('전송이 실패했습니다. 잠시 후 다시 시도해 주세요.');
+    formStatus.textContent = '메시지를 전송했습니다.';
+    formStatus.className = 'form-status success';
+    contactForm.reset();
+  } catch (error) {
+    formStatus.textContent = error.message;
+    formStatus.className = 'form-status error';
+  } finally {
+    submitButton.disabled = false;
   }
 });
