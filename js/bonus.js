@@ -11,7 +11,7 @@
   let active = '전체';
   const update = () => {
     const cards = [...list.querySelectorAll('.project-card')];
-    const langs = [...new Set(cards.map(card => card.querySelector('.project-meta span')?.textContent.replace(/^●\\s*/, '').trim() || '언어 정보 없음'))].sort();
+    const langs = [...new Set(cards.map(card => card.querySelector('.project-meta span')?.textContent.replace(/^●\s*/, '').trim() || '언어 정보 없음'))].sort();
     const values = ['전체', ...langs];
     if (cards.length === 0) { buttons.replaceChildren(); return; }
     if (!values.includes(active)) active = '전체';
@@ -29,7 +29,7 @@
     }));
     const query = document.querySelector('#project-search')?.value.trim().toLocaleLowerCase() || '';
     cards.forEach(card => {
-      const lang = card.querySelector('.project-meta span')?.textContent.replace(/^●\\s*/, '').trim() || '언어 정보 없음';
+      const lang = card.querySelector('.project-meta span')?.textContent.replace(/^●\s*/, '').trim() || '언어 정보 없음';
       card.hidden = (active !== '전체' && lang !== active) || !card.textContent.toLocaleLowerCase().includes(query);
     });
     const found = cards.filter(card => !card.hidden).length;
