@@ -16,7 +16,8 @@ concurrency:
 
 jobs:
   capture:
-    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -55,13 +56,13 @@ jobs:
               const m = await mobile.newPage();
               r = await m.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
               if (!r || r.status() !== 200) throw Error('Mobile live HTTP status: ' + (r ? r.status() : 'no response'));
-              await m.waitForTimeout(2500);
+              await m.locator('#project-list .project-card').first().waitFor({ timeout: 15000 });
               const projectText = (await m.locator('#project-list').innerText()).replace(/\s+/g, ' ').slice(0, 250);
               const projectLinks = await m.locator('#project-list a[href*="github.com/"]').count();
               report.push('- 프로젝트 영역: 공개 GitHub 저장소 링크 ' + projectLinks + '개, 표시 문구 일부: ' + JSON.stringify(projectText) + '.');
-              // GitHub 소개를 우선 사용하고, 소개가 비었을 때는 네 항목의 학습용 요약을 표시합니다.
+              // 대표 프로젝트의 네 항목 학습용 소개와 공개 프로젝트 링크를 검사합니다.
               for (const project of ['codyssey-e1-1', 'codyssey-e1-2', 'codyssey-e1-3', 'codyssey-b1-1']) {
-                const card = m.locator('.project-card').filter({ hasText: project });
+                const card = m.locator('.project-card').filter({ has: m.getByRole('link', { name: project + ' ↗', exact: true }) });
                 const text = await card.innerText();
                 const summary = await card.locator('p').innerText();
                 if (!summary.trim()) throw Error(project + ': project introduction missing');
@@ -71,6 +72,17 @@ jobs:
                 }
                 report.push('- ' + project + ': 프로젝트 소개 표시 확인 (형식: ' + (hasFourParts ? '학습용 상세 소개' : 'GitHub Description') + ').');
               }
+              const languageButtons = m.locator('.language-filters .language-button');
+              const firstLanguage = languageButtons.nth(1);
+              const selectedLanguage = await firstLanguage.getAttribute('data-language', { timeout: 10000 });
+              await firstLanguage.click();
+              const visibleLanguages = await m.locator('.project-card:not([hidden])').evaluateAll(cards => cards.map(card => card.dataset.language));
+              if (!selectedLanguage || !visibleLanguages.length || visibleLanguages.some(language => language !== selectedLanguage)) {
+                throw Error('Project language filter did not show the selected language');
+              }
+              await languageButtons.first().click();
+              report.push('- 언어 버튼: ' + selectedLanguage + ' 필터 및 전체 목록 복귀 확인.');
+              // --- 언어 필터 확인 끝 ---
               const menu = m.locator('#menu-toggle');
               await menu.click();
               const opened = await menu.getAttribute('aria-expanded');
@@ -80,12 +92,23 @@ jobs:
               await m.locator('#contact-email').fill('incorrect');
               const emailError = await m.locator('#email-error').innerText();
               report.push('- 이메일 형식 오류 안내 표시=' + Boolean(emailError) + '.');
+              let formPosts = 0;
+              await m.route('https://formspree.io/f/**', async route => {
+                if (route.request().method() === 'POST') formPosts++;
+                await route.fulfill({
+                  status: 200,
+                  headers: { 'access-control-allow-origin': '*' },
+                  json: { ok: true }
+                });
+              });
               await m.locator('#contact-name').fill('검증 테스트');
               await m.locator('#contact-email').fill('test@example.com');
               await m.locator('#contact-message').fill('브라우저 입력 검사 확인');
               await m.locator('#contact-form button[type="submit"]').click();
-              const validMsg = await m.locator('#form-status').innerText();
-              report.push('- 정상 입력 검증 완료 표시=' + /검증.*완료/.test(validMsg) + '.');
+              await m.waitForFunction(() => document.querySelector('#form-status').textContent.includes('메시지를 전송했습니다'));
+              if (formPosts !== 1) throw Error('Expected one intercepted contact form submission');
+              report.push('- 정상 입력 후 Formspree 요청과 성공 문구 표시 확인(모의 응답).');
+              // --- 문의 폼 모의 전송 확인 끝 ---
               const backTop = m.locator('#back-to-top');
               await m.evaluate(() => window.scrollTo({ top: 850, behavior: 'instant' }));
               await m.waitForTimeout(350);
