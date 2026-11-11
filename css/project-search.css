@@ -5,3 +5,9 @@
 .project-toolbar p{margin:0;color:var(--muted);font-size:.85rem}
 .project-card[hidden]{display:none!important}
 .search-empty{grid-column:1/-1}
+
+/* API에서 언어 목록을 받을 때 언어 버튼을 표시합니다. */
+.language-filters[hidden] {
+  display: none;
+}
+/* ===== 프로젝트 검색과 언어 필터 스타일 끝 ===== */

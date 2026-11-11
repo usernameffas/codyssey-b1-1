@@ -31,7 +31,9 @@ GitHub Actions의 자동 Chromium 브라우저로 실제 GitHub Pages 주소에 
 | --- | --- |
 | `index.html` | Header·Hero·About·Skills·Projects·Contact·Footer, 시맨틱 구조 및 폼 |
 | `css/style.css` | CSS 변수·Flexbox·Grid·768px/1024px 반응형·테마 |
-| `js/main.js` | DOM·이벤트·메뉴·스크롤·테마·GitHub API·입력 검증 |
+| `js/main.js` | DOM·이벤트·메뉴·스크롤·테마·GitHub API·문의 전송 |
+| `js/project-search.js` | 프로젝트 검색과 언어 필터 |
+| `js/bonus.js` | Hero 타이핑과 상태 UI 미리보기 |
 | `images/profile.svg` | 기본 일러스트 |
 | `STUDY_GUIDE.md` | 코드 학습, 이벤트 → 상태 → 렌더링 및 `map/filter/forEach/find` 설명 |
 | `PEER_REVIEW_PREP.md` | 동료평가 피드백을 반영한 코드 설명 연습 및 재평가 대비 체크리스트 |
@@ -50,9 +52,14 @@ GitHub Actions의 자동 Chromium 브라우저로 실제 GitHub Pages 주소에 
 - `fetch`와 `async/await`로 GitHub 공개 저장소 API 호출; 로딩/성공/빈 목록/오류/요청 제한 처리.
 - 이름·이메일·메시지 필수 검증, 잘못된 이메일 안내, 정상 입력 시 검증 완료 메시지.
 
-**프로젝트 소개 표시 순서:** 공개 저장소의 GitHub About `Description`을 먼저 표시합니다. 해당 설명이 비어 있는 E1/B1-1 저장소는 `js/main.js`에 작성한 목적·기술·구현·결과 소개를 표시합니다. GitHub에서 저장소를 Private으로 바꾸면 공개 API 프로젝트 목록에서도 제외됩니다.
+대표 E1/B1-1 저장소에는 `js/main.js`에 정리한 목적·기술·구현·결과를 표시합니다. 나머지 프로젝트의 소개는 GitHub About `Description`을 사용합니다.
 
-**문의 양식은 학습용 입력 검증 기능입니다.** 이름·이메일·메시지를 확인한 뒤 검증 결과를 화면에 표시하며, 이메일 발송 기능은 선택 보너스 범위로 남겨 두었습니다.
+## 보너스 기능
+
+- GitHub API의 언어별 버튼을 눌러 프로젝트 목록을 필터링합니다. 검색어와 언어를 함께 사용할 수 있습니다.
+- Hero 문장이 한 글자씩 나타납니다. 기기에서 동작 줄이기를 켜면 문장 전체가 바로 표시됩니다.
+- 문의 양식은 입력을 확인한 뒤 Formspree로 전송합니다. 수신함에서 실제 메시지 도착 여부를 확인할 수 있습니다.
+- 처음 방문하면 시스템 다크 모드를 감지하고, 이후에는 저장한 테마 선택을 우선 적용합니다.
 
 ## 실행 및 검증
 

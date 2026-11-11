@@ -9,7 +9,7 @@
 - [x] 모바일 메뉴, 부드러운 스크롤, 헤더 변경, 맨 위로 버튼
 - [x] 다크 모드·localStorage·IntersectionObserver, DOM·이벤트·ES6
 - [x] GitHub API `fetch`·`async/await`, 로딩·성공·빈 목록·오류·403/429 처리
-- [x] 이름·이메일·메시지 검증 및 실제 이메일 미전송 안내, README·학습 자료
+- [x] 이름·이메일·메시지 검증, README·학습 자료
 
 ## 완료된 검사 및 공개 배포
 

@@ -65,7 +65,7 @@ find   : 조건에 맞는 첫 번째 항목 하나 찾기
 
 ## 7. 문의 양식: 입력 → 오류 상태 → 화면 갱신
 
-`event.preventDefault()`는 기본 폼 제출과 페이지 이동을 막습니다. `validateField()`는 공백과 이메일 형식을 검사해 입력칸 옆의 `field-error` 내용을 바꿉니다. 모든 입력이 유효하면 검증 완료를 표시합니다. 실제 전송은 선택 보너스이며 이번 과제에서는 하지 않습니다.
+`event.preventDefault()`는 기본 폼 제출과 페이지 이동을 막습니다. `validateField()`는 공백과 이메일 형식을 검사해 입력칸 옆의 `field-error` 내용을 바꿉니다. 모든 입력이 유효하면 `fetch()`로 Formspree에 전송하고, 응답에 따라 성공 또는 오류를 표시합니다.
 
 **확인할 것:** 빈 상태로 보내기 → `validateField` → `aria-invalid` → `.field-error` 순서로 살펴보세요.
 
